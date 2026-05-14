@@ -1,0 +1,49 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{setspace}
+\setstretch{1.08}
+
+\begin{document}
+\noindent{\large\textbf{STAT 248 Final Project Proposal}}\\
+\noindent Junle Xu \hfill \today
+\vspace{0.5em}
+
+\section*{The question}
+My final project asks the following question: 
+
+Do Apple quarterly stock returns contain stable temporal dependence and seasonality that are strong enough to produce out-of-sample forecasts that outperform simple benchmark forecasts on recent quarters?
+
+If the answer is `yes', it means that models using time-series structure (ARIMA etc.) produce meaningfully lower forecast error than naive alternatives. A `no' answer means that the quarterly return process is either too noisy or too unstable over time, so more complex models do not consistently beat simple benchmarks.
+
+\section*{Description of the data}
+I will use the Kaggle dataset \textit{Apple Financial Dataset (1980--2026)}. For this project, the core file is \texttt{aapl\_quarterly\_master.csv}, which has 182 quarterly observations (1981--2026) with variables such as \texttt{quarter\_return}, \texttt{price\_return\_pct}, and return volatility summaries.
+
+\begin{itemize}
+	\item \texttt{aapl\_quarterly\_master.csv}: primary modeling table for quarterly forecasting.
+	\item \texttt{aapl\_quarterly\_summary.csv}: optional support table for additional quarterly aggregates and revenue-share covariates.
+	\item \texttt{aapl\_master\_enriched.csv} and \texttt{aapl\_stock\_ml\_features.csv}: daily-level files that are useful for context, but not central to the main quarterly analysis.
+\end{itemize}
+
+The main target variable will be \texttt{quarter\_return}, with \texttt{price\_return\_pct} used as a robustness check. Selected financial composition variables may be merged from \texttt{aapl\_quarterly\_summary.csv} by fiscal year and quarter.
+
+\section*{Why this is a time series problem}
+This is a time series problem because observations are ordered in time and are not independent. Quarterly stock returns may exhibit autocorrelation and recurring seasonal behavior tied to fiscal quarters and product cycles. Ignoring temporal dependence would violate core modeling assumptions of independent errors and can produce misleading inference and overly optimistic uncertainty estimates. In addition, forecasting is a temporal task: each prediction must be generated using only information available up to that quarter. Therefore, this project is trying to solve a time series problem.
+
+\section*{Proposed methods}
+I will use multiple complementary methods so that conclusions do not rely on one modeling choice:
+
+\begin{itemize}
+	\item \textbf{Exploration and diagnostics:} quarter-by-quarter plots, grouped seasonal plots by fiscal quarter, ACF and PACF diagnostics, and stationarity checks (including an ADF test). These steps will guide differencing decisions and lag selection.
+	\item \textbf{Time-series models from class:} AR($p$), ARMA($p,q$), and ARIMA($p,d,q$), fitted to quarterly returns. Model orders will be selected with AIC/BIC and checked on a chronological validation block.
+	\item \textbf{Regression baselines:} univariate linear regression, multivariate linear regression, Ridge, and LASSO using lagged predictors. Ridge/LASSO hyperparameters will be tuned with rolling or expanding time-aware validation, not random cross-validation.
+	\item \textbf{Evaluation framework:} a contiguous holdout period at the end of the sample, with MAE, RMSE, and MAPE as primary metrics. All models will be compared with naive benchmarks (historical mean and last-quarter carry-forward), followed by residual autocorrelation checks for adequacy.
+\end{itemize}
+
+\section*{Expected outcomes}
+A positive result would look like this: at least one time-series-aware model (AR/ARMA/ARIMA or a regularized lagged regression) consistently improves out-of-sample MAE, RMSE, and MAPE over naive benchmarks on recent quarters, and residual diagnostics indicate reduced remaining autocorrelation. In this case, I would conclude that Apple quarterly returns contain usable temporal structure for short-horizon forecasting, even if absolute errors remain moderate.
+
+A null result would look like this: model errors are similar to, or worse than, naive benchmarks; gains are not stable across nearby test windows; and residual diagnostics suggest weakly captured or unstable dependence. In that scenario, I would conclude that quarterly returns are difficult to predict with these methods at this horizon, and that apparent in-sample structure does not translate into robust out-of-sample performance.
+
+Either outcome will be informative. A positive finding supports practical predictive value of temporal modeling. A null finding clarifies limits of classical models and helps define what additional information or alternative modeling frameworks would be needed.
+
+\end{document}
