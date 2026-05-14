@@ -1,0 +1,3 @@
+test,statistic,p_value,lags,conclusion
+ADF,-13.903038950518608,5.688295818528172e-26,0,stationary
+KPSS,0.08804762978996389,0.1,3,stationary
